@@ -6,13 +6,12 @@ public class Bunker implements Tile {
     public static final char BUNKER = 'B';
     public static final char BUNKER_OCCUPIED = 'O';
     public static final char EMPTY_TILE = '.';
-    Player occupier;
+    private Player occupier;
     private int x;
     private int y;
     private int treasure;
     private String name;
     private int owner;
-    boolean occupied=false;
 
     public Bunker(int x, int y, int treasure, String name) {
         this.x = x;
@@ -22,24 +21,19 @@ public class Bunker implements Tile {
     }
 
     @Override
-    public char toChar(int currentTeamId) {
-        if (occupier.ownerIdIs(currentTeamId)) {
-            return BUNKER_OCCUPIED;
-        }
-        if (owner == currentTeamId) {
-            return BUNKER;
-        }
-        return EMPTY_TILE;
-    }
-
-    @Override
     public boolean isOccupied() {
         return occupier != null;
     }
     @Override
-    public void occupy(Player e) {
-        occupier = e;
+    public void occupy(Player player) {
+        occupier = player;
     }
+
+    @Override
+    public Player getOccupier() {
+        return occupier;
+    }
+
     @Override
     public void free() {
         occupier = null;
@@ -63,10 +57,6 @@ public class Bunker implements Tile {
 
     public void setOwnerId(int teamId) {
         owner = teamId;
-    }
-
-    public boolean exists() {
-        return name == null;
     }
 
     public int getX() {

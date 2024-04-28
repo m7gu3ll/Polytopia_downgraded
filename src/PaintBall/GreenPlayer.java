@@ -1,16 +1,19 @@
 package PaintBall;
 
-public class GreenPlayer implements Player{
+public class GreenPlayer implements Player {
     int x;
     int y;
     int OwnerId;
     String type = "green";
+    int id;
 
-    public  GreenPlayer(int x, int y, int OwnerID) {
+    public GreenPlayer(int x, int y, int OwnerID, int id) {
         this.x = x;
         this.y = y;
         this.OwnerId = OwnerID;
+        this.id =id;
     }
+
     @Override
     public String getType() {
         return type;
@@ -44,5 +47,9 @@ public class GreenPlayer implements Player{
     @Override
     public int getY() {
         return y;
+    }
+    @Override
+    public int getPlayerId() {
+        return id;
     }
 }

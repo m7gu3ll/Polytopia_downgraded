@@ -6,22 +6,25 @@ public class EmptyTile implements Tile {
     public static final char PLAYER = 'P';
     Player occupier;
 
-    @Override
-    public char toChar(int currentTeamId) {
-        if (occupier.ownerIdIs(currentTeamId)) {
-            return PLAYER;
-        }
-        return EMPTY_TILE;
+    public EmptyTile() {
+        occupier = null;
     }
 
     @Override
     public boolean isOccupied() {
         return occupier != null;
     }
+
     @Override
-    public void occupy(Player e) {
-        occupier = e;
+    public void occupy(Player player) {
+        occupier = player;
     }
+
+    @Override
+    public Player getOccupier() {
+        return occupier;
+    }
+
     @Override
     public void free() {
         occupier = null;

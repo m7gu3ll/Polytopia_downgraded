@@ -7,7 +7,7 @@ public class BunkerArrayList implements ArrayList<Bunker> {
 
     public BunkerArrayList() {
         array = new Bunker[DEFAULT_SIZE];
-        len = DEFAULT_SIZE;
+        len = 0;
     }
 
     @Override

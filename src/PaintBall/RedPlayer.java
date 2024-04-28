@@ -5,19 +5,15 @@ public class RedPlayer implements Player {
     int y;
     int OwnerId;
     String type = "red";
+    int id;
 
 
-    public  RedPlayer(int x, int y, int OwnerID) {
+    public RedPlayer(int x, int y, int OwnerID,int id) {
         this.x = x;
         this.y = y;
         this.OwnerId = OwnerID;
+        this.id =id;
     }
-
-    @Override
-    public char toChar(int currentTeamId) {
-        return 0;
-    }
-
 
     @Override
     public String getType() {
@@ -34,13 +30,13 @@ public class RedPlayer implements Player {
     }
 
     @Override
-    public void moveX(int i) {
-        x += i;
-    }
-
-    @Override
-    public void moveY(int i) {
-        y += i;
+    public void move(int i){
+        switch (i){
+            case 1->x--;
+            case 2->y--;
+            case 3->y++;
+            case 4->x++;
+        }
     }
 
     @Override
@@ -51,5 +47,10 @@ public class RedPlayer implements Player {
     @Override
     public int getY() {
         return y;
+    }
+
+    @Override
+    public int getPlayerId() {
+        return id;
     }
 }

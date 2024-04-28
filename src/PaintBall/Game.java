@@ -31,10 +31,15 @@ public interface Game {
     Bunker findCurrentTeamBunker(String bunkerName);
     void movePlayer();
     boolean checkPlayerType(String playerType);
-    void move(int x,int y,String[] directions);
+    int move(int x,int y,String directions,int numberOfMoves);
     Player findPlayer(int x, int y );
 
     PlayerIterator getCurrentTeamsPlayers();
+
+    void attack();
+    int BeforeMoveError(int x,int y,String directions,int numberOfMoves,Player player);
+    int DuringMoveError(int x,int y,int dir_i,Player player);
+
 }
 
 

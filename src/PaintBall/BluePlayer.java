@@ -5,11 +5,13 @@ public class BluePlayer implements Player {
     int y;
     int OwnerId;
     String type = "blue";
+    int id;
 
-    public BluePlayer(int x, int y, int OwnerID) {
+    public BluePlayer(int x, int y, int OwnerID, int id) {
         this.x = x;
         this.y = y;
         this.OwnerId = OwnerID;
+        this.id =id;
     }
 
     @Override
@@ -45,5 +47,9 @@ public class BluePlayer implements Player {
     @Override
     public int getY() {
         return y;
+    }
+    @Override
+    public int getPlayerId() {
+        return id;
     }
 }

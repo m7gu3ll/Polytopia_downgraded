@@ -7,7 +7,7 @@ public class PlayerArrayList implements ArrayList<Player> {
 
     public PlayerArrayList() {
         array = new Player[DEFAULT_SIZE];
-        len = DEFAULT_SIZE;
+        len = 0;
     }
 
     @Override
@@ -39,5 +39,17 @@ public class PlayerArrayList implements ArrayList<Player> {
     @Override
     public int len() {
         return len;
+    }
+
+
+    public int find(Player defender) {
+        boolean found = false;
+        int i = 0;
+        while (i < len && !found) {
+            if (defender == array[i]) {
+                found = true;
+            }
+        }
+        return i;
     }
 }

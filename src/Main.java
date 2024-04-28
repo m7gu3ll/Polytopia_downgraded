@@ -39,7 +39,7 @@ public class Main {
                     case GAME -> game = startGame(sc);
                     case MOVE -> move(game, sc);
                     case CREATE -> create(game, sc);
-                    case ATTACK -> System.out.println("a");
+                    case ATTACK -> attack(game);
                     case STATUS -> status(game, sc);
                     case MAP -> map(game);
                     case BUNKERS -> bunkers(game);
@@ -51,6 +51,10 @@ public class Main {
             }
         }
         while (!command.equals(QUIT));
+    }
+
+    private static void attack(Game game) {
+        game.attack();
     }
 
     private static void players(Game game) {
@@ -154,15 +158,13 @@ public class Main {
         System.out.println(numberOfBunkers + " bunkers:");
         while (BIt.hasNext()) {
             bunker = ((Bunker) BIt.next());
-            if (bunker.exists()) {
-                bunkerName = bunker.toString();
-                System.out.print(bunkerName);
-                bunkerOwnerId = bunker.getOwnerId();
-                if (bunkerOwnerId != 0) {
-                    teamName = game.getTeamName(bunkerOwnerId);
-                    System.out.println(" (" + teamName + ")");
-                } else System.out.println(" (without owner)");
-            }
+            bunkerName = bunker.toString();
+            System.out.print(bunkerName);
+            bunkerOwnerId = bunker.getOwnerId();
+            if (bunkerOwnerId != 0) {
+                teamName = game.getTeamName(bunkerOwnerId);
+                System.out.println(" (" + teamName + ")");
+            } else System.out.println(" (without owner)");
         }
         System.out.println(numberOfTeams + " teams:");
         while (TIt.hasNext()) {
@@ -246,6 +248,26 @@ public class Main {
         int y = sc.nextInt();
         String input = sc.nextLine();
         String[] inputParts = input.split(" ");
-        game.move(x, y, inputParts);
+        int numberOfMoves = inputParts.length;
+        boolean dontStopmobv = true;
+        int i = 0;
+        do {
+            switch (game.move(x, y, inputParts[i], numberOfMoves)) {
+                case 0 -> System.out.println("");
+                case 1 -> System.out.println("Invalid position.");
+                case 2 -> System.out.println("Invalid direction.");
+                case 3 -> System.out.println("No player in that position.");
+                case 4 -> {
+                    System.out.println("invalid move");
+                    dontStopmobv = false;
+                }
+                case 5 -> System.out.println("Trying to move off the map.");
+                case 6 -> System.out.println("Position occupied.");
+                case 7-> System.out.println("Bunker seized.");
+                case 8-> System.out.println("Won the fight");
+                case 9-> System.out.println("Won the fight and bunker seized.");
+            }
+            i++;
+        } while (i < numberOfMoves && dontStopmobv);
     }
 }

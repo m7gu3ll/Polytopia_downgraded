@@ -29,7 +29,8 @@ public class TeamClass implements Team {
         return new BunkerIterator(bunkers);
     }
 
-    private void addBunker(Bunker bunker) {
+    @Override
+    public void addBunker(Bunker bunker) {
         bunkers.add(bunker);
     }
 
@@ -39,17 +40,17 @@ public class TeamClass implements Team {
     }
 
     @Override
-    public void addPlayer(String playerType, int x, int y, int ownerId) {
+    public void addPlayer(String playerType, int x, int y, int ownerId,int pId) {
 
         switch (playerType) {
             case RED:
-                players.add(new RedPlayer(x, y, ownerId));
+                players.add(new RedPlayer(x, y, ownerId,pId));
                 break;
             case BLUE:
-                players.add(new BluePlayer(x, y, ownerId));
+                players.add(new BluePlayer(x, y, ownerId,pId));
                 break;
             case GREEN:
-                players.add(new GreenPlayer(x, y, ownerId));
+                players.add(new GreenPlayer(x, y, ownerId,pId));
                 break;
         }
 
@@ -58,5 +59,28 @@ public class TeamClass implements Team {
     @Override
     public PlayerIterator getPlayerIterator() {
         return new PlayerIterator(players);
+    }
+
+    @Override
+    public void removePlayer(Player playerAttacking) {
+
+    }
+
+    @Override
+    public void loseBunker(Bunker bunker) {
+        Iterator<Tile> BunkerAR =getBunkerIterator();
+        Bunker tempbunker;
+        int id=0;
+        while (BunkerAR.hasNext()){
+            tempbunker= (Bunker) BunkerAR.next();
+            int x=tempbunker.getX();
+            int y=tempbunker.getY();
+            int atkx=bunker.getX();
+            int atky=bunker.getY();
+            if (x==atkx&&y==atky){
+                bunkers.remove(id);
+            }
+            id++;
+        }
     }
 }
