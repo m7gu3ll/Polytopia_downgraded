@@ -60,7 +60,7 @@ public class TeamClass implements Team {
     }
 
     @Override
-    public void loseBunker(Bunker bunker) {
+    public void removeBunker(Bunker bunker) {
         bunkers.remove(bunker);
     }
 }

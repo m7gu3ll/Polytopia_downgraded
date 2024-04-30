@@ -282,7 +282,6 @@ public class Main {
                 thisPlayer = otherPlayer;
         }
         do {
-            System.out.println(game.findPlayer(x, y));
             switch (game.move(x, y, directions[i], numberOfMoves)) {
                 case 0 -> {
                     x = thisPlayer.getX();
@@ -315,6 +314,8 @@ public class Main {
 
                 }
                 case 9 -> {
+                    x = thisPlayer.getX();
+                    y = thisPlayer.getY();
                     System.out.println("Player eliminated.");
                     playerIsMoving = false;
                 }
@@ -327,7 +328,6 @@ public class Main {
             }
             i++;
             numberOfMoves--;
-
         } while (numberOfMoves > 0 && playerIsMoving && !game.isThereOneTeamLeft());
         return update(game);
     }

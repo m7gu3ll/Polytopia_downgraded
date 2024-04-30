@@ -75,11 +75,12 @@ public class GameClass implements Game {
         result[Y] = mlt * signY;
     }
 
-    private void updateTeam() {
-        currentTeamId++;
-        if (currentTeamId >= teams.len()) {
-            currentTeamId = 0;
+    private static void swapOwnership(Bunker bunker, Player playerMoving) {
+        if (bunker.getOwner() != null) {
+            bunker.getOwner().removeBunker(bunker);
         }
+        bunker.setOwner(playerMoving.getOwner());
+        playerMoving.getOwner().addBunker(bunker);
     }
 
     @Override
@@ -271,7 +272,6 @@ public class GameClass implements Game {
         return bunker;
     }
 
-
     public boolean checkPlayerType(String playerType) {
         boolean returnValue;
         switch (playerType) {
@@ -281,9 +281,11 @@ public class GameClass implements Game {
         return returnValue;
     }
 
-
     @Override
     public Player findPlayer(int x, int y) {
+        if (map[y][x].getOccupier() == null) {
+            return null;
+        }
         if (map[y][x].getOccupier().ownerIs(teams.get(currentTeamId)))
             return map[y][x].getOccupier();
         return null;
@@ -434,18 +436,6 @@ public class GameClass implements Game {
         return false;
     }
 
-
-    //TODO types
-    private boolean attackInMap(int x, int y, String type, Player defender) {
-        Tile target = map[y][x];
-        defender = target.getOccupier();
-        if (target.isOccupied() && !defender.ownerIs(teams.get(currentTeamId))) {
-            target.free();
-            return true;
-        }
-        return false;
-    }
-
     private boolean isInBounds(int x, int y) {
         return (x >= 0 && x < wd) && (y >= 0 && y < ht);
     }
@@ -475,29 +465,38 @@ public class GameClass implements Game {
         int newX = x;
         int newY = y;
         switch (direction) {
-            case N_DIRECTION -> x--;
-            case W_DIRECTION -> y--;
-            case E_DIRECTION -> y++;
-            case S_DIRECTION -> x++;
+            case N_DIRECTION -> newY--;
+            case W_DIRECTION -> newX--;
+            case E_DIRECTION -> newX++;
+            case S_DIRECTION -> newY++;
         }
-        if (findPlayer(newX, newY) != null)
-            return 5;
-
         if (!isInBounds(newX, newY))
             return 6;
 
+        if (map[newY][newX].isOccupied()) {
+            if (map[newY][newX].getOccupier().ownerIs(teams.get(currentTeamId))) {
+                return 5;
+            }
+        }
+
+
         if (map[newY][newX] instanceof Bunker bunker) {
             if (!bunker.isOccupied()) {
-                bunker.setOwner(playerMoving.getOwner());
+                if (!playerMoving.ownerIs(bunker.getOwner())) {
+                    swapOwnership(bunker, playerMoving);
+                    movePlayerTo(x, y, newY, newX, playerMoving);
+                    return 7;
+                }
                 movePlayerTo(x, y, newY, newX, playerMoving);
-                return 7;
+                return 0;
             }
             Player defender = map[newY][newX].getOccupier();
             if (!startDuel(map[newY][newX], defender, playerMoving)) {
-                bunker.setOwner(playerMoving.getOwner());
+                swapOwnership(bunker, playerMoving);
                 movePlayerTo(x, y, newY, newX, playerMoving);
                 return 10;
             }
+            return 9;
         }
         if (map[newY][newX].isOccupied()) {
             Player defender = map[newY][newX].getOccupier();
@@ -516,6 +515,7 @@ public class GameClass implements Game {
     private void movePlayerTo(int x, int y, int newY, int newX, Player playerMoving) {
         map[newY][newX].occupy(playerMoving);
         playerMoving.move(newX, newY);
+        System.out.println("occupation successful (" + (newX+1) + ", " + (newY+1) + ") = " + (map[y][x].getOccupier() == map[newY][newX].getOccupier()));
         map[y][x].free();
     }
 
@@ -541,6 +541,7 @@ public class GameClass implements Game {
         Team team;
         while (i < teams.len()) {
             team = teams.get(i);
+            //System.out.println(team.toString() + ": bunkers = " + team.getBunkersLen() + ", players = " + team.getPlayersLen());
             if (team.getBunkersLen() == 0 && team.getPlayersLen() == 0) {
                 teams.remove(i);
             } else {

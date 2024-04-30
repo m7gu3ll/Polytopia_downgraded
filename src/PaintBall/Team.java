@@ -13,7 +13,7 @@ public interface Team {
     PlayerIterator getPlayerIterator();
 
     void removePlayer(Player playerAttacking);
-    void loseBunker(Bunker bunker);
+    void removeBunker(Bunker bunker);
     void addBunker(Bunker bunker);
 
     int getPlayersLen();
