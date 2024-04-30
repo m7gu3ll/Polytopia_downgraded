@@ -17,7 +17,7 @@ public class BluePlayer implements Player {
         return type;
     }
 
-    public boolean ownerIdIs(Team currentTeamId) {
+    public boolean ownerIs(Team currentTeamId) {
         return id == currentTeamId;
     }
 
@@ -39,7 +39,7 @@ public class BluePlayer implements Player {
     }
 
     @Override
-    public Team getOwnerId() {
+    public Team getOwner() {
 
         return id;
     }

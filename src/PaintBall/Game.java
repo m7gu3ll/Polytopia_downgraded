@@ -48,10 +48,6 @@ public interface Game {
 
     void attack();
 
-    int BeforeMoveError(int x, int y, int direction, int numberOfMoves, Player player);
-
-    int DuringMoveError(int x, int y, int dir_i, Player player);
-
 
     boolean update();
 

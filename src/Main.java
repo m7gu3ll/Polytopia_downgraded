@@ -282,10 +282,13 @@ public class Main {
                 thisPlayer = otherPlayer;
         }
         do {
-            System.out.println("x = " + x + ", y = " + y);
             System.out.println(game.findPlayer(x, y));
             switch (game.move(x, y, directions[i], numberOfMoves)) {
-
+                case 0 -> {
+                    x = thisPlayer.getX();
+                    y = thisPlayer.getY();
+                    soutSuccessfulMove(x, y, thisPlayer);
+                }
                 case 1 -> System.out.println("Invalid position.");
                 case 2 -> System.out.println("Invalid direction.");
                 case 3 -> {
@@ -302,37 +305,36 @@ public class Main {
                     x = thisPlayer.getX();
                     y = thisPlayer.getY();
                     System.out.println("Bunker seized.");
-                    System.out.printf("%s player in position (%d, %d)\n", thisPlayer.getType(), x + 1, y + 1);
+                    soutSuccessfulMove(x, y, thisPlayer);
                 }
                 case 8 -> {
                     x = thisPlayer.getX();
                     y = thisPlayer.getY();
                     System.out.println("Won the fight.");
-                    System.out.printf("%s player in position (%d, %d)\n", thisPlayer.getType(), x + 1, y + 1);
+                    soutSuccessfulMove(x, y, thisPlayer);
 
                 }
                 case 9 -> {
-                    x = thisPlayer.getX();
-                    y = thisPlayer.getY();
-                    System.out.println("Won the fight and bunker seized.");
-                    System.out.printf("%s player in position (%d, %d)\n", thisPlayer.getType(), x + 1, y + 1);
-
-                }
-                case 10 -> {
                     System.out.println("Player eliminated.");
                     playerIsMoving = false;
                 }
-                case 0 -> {
+                case 10 -> {
                     x = thisPlayer.getX();
                     y = thisPlayer.getY();
-                    System.out.printf("%s player in position (%d, %d)\n",
-                            thisPlayer.getType(), x + 1, y + 1);
+                    System.out.println("Won the fight and bunker seized.");
+                    soutSuccessfulMove(x, y, thisPlayer);
                 }
             }
             i++;
             numberOfMoves--;
+
         } while (numberOfMoves > 0 && playerIsMoving && !game.isThereOneTeamLeft());
         return update(game);
+    }
+
+    private static void soutSuccessfulMove(int x, int y, Player thisPlayer) {
+        System.out.printf("%s player in position (%d, %d)\n",
+                thisPlayer.getType(), x + 1, y + 1);
     }
 
     private static Game update(Game game) {
