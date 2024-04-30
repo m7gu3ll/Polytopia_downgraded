@@ -297,7 +297,7 @@ public class GameClass implements Game {
     }
 
     @Override
-    public void attack() {
+    public boolean attack() {
         Player player;
         int i = 0;
         int previousLen;
@@ -315,6 +315,7 @@ public class GameClass implements Game {
                 i++;
             }
         }
+        return isThereOneTeamLeft();
     }
 
     private void attackBlue(int attackerId) {
@@ -328,14 +329,23 @@ public class GameClass implements Game {
             ux = UBlue(n, attacker) + attacker.getX();
             if (isInBounds(ux, attacker.getY())) {
                 iterationsSkipped = 0;
-                Tile target = map[attacker.getY()][ux + attacker.getX()];
-                Player defender = target.getOccupier();
-                attackerDied = startDuel(target, defender, attacker);
+                attackerDied = attackTileAt(ux, attacker.getY(), attacker);
             } else {
                 iterationsSkipped++;
             }
             n++;
         }
+    }
+
+    private boolean attackTileAt(int x, int y, Player attacker) {
+        boolean attackerDied;
+        Tile target = map[y][x];
+        Player defender = target.getOccupier();
+        attackerDied = startDuel(target, defender, attacker);
+        if (!attackerDied && target instanceof Bunker bunker) {
+            bunker.setOwner(attacker.getOwner());
+        }
+        return attackerDied;
     }
 
     // Un E R^2, Un = (n/4 + 1) * ((-1)^a, (-1)^b)
@@ -351,9 +361,7 @@ public class GameClass implements Game {
             u[Y] += attacker.getY();
             if (isInBounds(u[X], u[Y])) {
                 iterationsSkipped = 0;
-                Tile target = map[u[Y]][u[X]];
-                Player defender = target.getOccupier();
-                attackerDied = startDuel(target, defender, attacker);
+                attackerDied = attackTileAt(u[X], u[Y], attacker);
             } else {
                 iterationsSkipped++;
             }
@@ -373,9 +381,7 @@ public class GameClass implements Game {
             u[X]++;
             if (isInBounds(u[X], u[Y])) {
                 iterationsSkipped = 0;
-                Tile target = map[u[Y]][u[X]];
-                Player defender = target.getOccupier();
-                attackerDied = startDuel(target, defender, attacker);
+                attackerDied = attackTileAt(u[X], u[Y], attacker);
             } else {
                 iterationsSkipped++;
                 u[X] = attacker.getX();
@@ -515,7 +521,6 @@ public class GameClass implements Game {
     private void movePlayerTo(int x, int y, int newY, int newX, Player playerMoving) {
         map[newY][newX].occupy(playerMoving);
         playerMoving.move(newX, newY);
-        System.out.println("occupation successful (" + (newX+1) + ", " + (newY+1) + ") = " + (map[y][x].getOccupier() == map[newY][newX].getOccupier()));
         map[y][x].free();
     }
 
@@ -543,11 +548,18 @@ public class GameClass implements Game {
             team = teams.get(i);
             //System.out.println(team.toString() + ": bunkers = " + team.getBunkersLen() + ", players = " + team.getPlayersLen());
             if (team.getBunkersLen() == 0 && team.getPlayersLen() == 0) {
-                teams.remove(i);
+                removeTeam(i);
             } else {
                 i++;
             }
         }
         return teams.len() == 1;
+    }
+
+    private void removeTeam(int i) {
+        teams.remove(i);
+        if (i < currentTeamId) {
+            currentTeamId--;
+        }
     }
 }

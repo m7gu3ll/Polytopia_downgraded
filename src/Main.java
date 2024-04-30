@@ -70,8 +70,11 @@ public class Main {
     }
 
     private static Game attack(Game game) {
-        game.attack();
-        map(game);
+        if (!game.attack())
+            map(game);
+        else
+            System.out.println("All players eliminated.");
+
         return update(game);
     }
 
@@ -187,7 +190,11 @@ public class Main {
         int numberOfTeams = game.getNumberOfTeams();
 
         System.out.println(y + " " + x);
-        System.out.println(numberOfBunkers + " bunkers:");
+        if (numberOfBunkers > 0)
+            System.out.println(numberOfBunkers + " bunkers:");
+        else
+            System.out.println("Without bunkers.");
+
         while (BIt.hasNext()) {
             bunker = (Bunker) BIt.next();
             System.out.print(bunker.toString());
@@ -219,7 +226,11 @@ public class Main {
         }
         Iterator<Tile> GBI = team.getBunkerIterator();
         numberOfOwnBunkers = team.getBunkersLen();
-        System.out.println(numberOfOwnBunkers + " bunkers:");
+        if (numberOfOwnBunkers > 0)
+            System.out.println(numberOfOwnBunkers + " bunkers:");
+        else
+            System.out.println("Without bunkers.");
+
         while (GBI.hasNext()) {
             bunker = (Bunker) GBI.next();
             System.out.printf("%s with %d coins in position (%d, %d)\n",
@@ -281,7 +292,9 @@ public class Main {
             if (otherPlayer.getX() == x && otherPlayer.getY() == y)
                 thisPlayer = otherPlayer;
         }
-        do {
+
+        while (numberOfMoves > 0 && playerIsMoving /*&& !game.isThereOneTeamLeft()*/) {
+            //map(game);
             switch (game.move(x, y, directions[i], numberOfMoves)) {
                 case 0 -> {
                     x = thisPlayer.getX();
@@ -328,7 +341,8 @@ public class Main {
             }
             i++;
             numberOfMoves--;
-        } while (numberOfMoves > 0 && playerIsMoving && !game.isThereOneTeamLeft());
+        }
+        //map(game);
         return update(game);
     }
 

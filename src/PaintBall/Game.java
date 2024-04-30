@@ -46,7 +46,7 @@ public interface Game {
 
     PlayerIterator getCurrentTeamsPlayers();
 
-    void attack();
+    boolean attack();
 
 
     boolean update();
