@@ -2,10 +2,15 @@ package PaintBall;
 
 public class GameClass implements Game {
     public static final int INVALID_ID = -1;
-    public static final char EMPTY_TILE = '.';
+    public static final int X = 0;
+    public static final int Y = 1;
+    public static final int N_DIRECTION = 1;
+    public static final int W_DIRECTION = 2;
+    public static final int E_DIRECTION = 3;
+    public static final int S_DIRECTION = 4;
+    final static int BLUEPRICE = 2;
     final static int GREENPRICE = 2;
-    final static int REDPRICE = 2;
-    final static int BLUEPRICE = 4;
+    final static int REDPRICE = 4;
     final static String NORTH = "north";
     final static String SOUTH = "south";
     final static String EAST = "east";
@@ -21,7 +26,7 @@ public class GameClass implements Game {
     PlayerArrayList players;
     int currentTeamId;
 
-    public GameClass(int width, int height, int teamsLength, int bunkersLength) {
+    public GameClass(int width, int height) {
         wd = width;
         ht = height;
         map = new Tile[ht][wd];
@@ -33,6 +38,41 @@ public class GameClass implements Game {
         players = new PlayerArrayList();
         teams = new TeamArrayList();
         bunkers = new BunkerArrayList();
+        currentTeamId = 0;
+    }
+
+    private static int UBlue(int n, Player attacker) {
+        int ux;
+        int sign;
+        sign = (n % 2 == 0) ? 1 : -1;
+        ux = sign * n + attacker.getX();
+        return ux;
+    }
+
+    private static void UGreen(int n, int[] result) {
+        int signX = 0;
+        int signY = 0;
+        int mlt = (n >> 2) + 1;
+        switch ((n - 1) % 4) {
+            case 0 -> {
+                signX = -1;
+                signY = -1;
+            }
+            case 1 -> {
+                signX = 1;
+                signY = -1;
+            }
+            case 2 -> {
+                signX = -1;
+                signY = 1;
+            }
+            case 3 -> {
+                signX = 1;
+                signY = 1;
+            }
+        }
+        result[X] = mlt * signX;
+        result[Y] = mlt * signY;
     }
 
     private void updateTeam() {
@@ -59,25 +99,31 @@ public class GameClass implements Game {
 
     @Override
     public boolean verifyBunkerParameters(int x, int y, int treasure, String name) {
-        return x > 0 && x < wd && y > 0 && y < ht && treasure > 0 && getBunkerId(name) != INVALID_ID;
+        return x >= 0 && x < wd
+                && y >= 0 && y < ht
+                && treasure > 0
+                && getBunkerId(name) == INVALID_ID
+                && !(map[y][x] instanceof Bunker);
     }
 
     @Override
     public boolean verifyTeamParameters(int bunkerId, String name) {
-        return bunkerId != INVALID_ID && getTeamId(name) != INVALID_ID;
+        return bunkerId != INVALID_ID
+                && bunkers.get(bunkerId).getOwner() == null
+                && getTeamId(name) == INVALID_ID;
     }
 
     @Override
     public void addBunker(int x, int y, int treasure, String name) {
         Bunker bunker = new Bunker(x, y, treasure, name);
         bunkers.add(bunker);
-        map[x][y] = bunker;
+        map[y][x] = bunker;
     }
 
     @Override
     public void addTeam(int bunkerId, String name) {
-        Team team = new TeamClass(name, bunkers.get(bunkerId));
-        bunkers.get(bunkerId).setOwnerId(find(team));
+        teams.add(new TeamClass(name, bunkers.get(bunkerId)));
+        bunkers.get(bunkerId).setOwner(teams.get(teams.len() - 1));
     }
 
     private int find(Team team) {
@@ -94,28 +140,23 @@ public class GameClass implements Game {
 
     @Override
     public int getX() {
-        return wd;
+        return ht;
     }
 
     @Override
     public int getY() {
-        return ht;
+        return wd;
     }
 
     @Override
     public int getBunkerId(String name) {
         int id = INVALID_ID;
-        int low = 0;
-        int high = bunkers.len() - 1;
-
-        while (low <= high && id == INVALID_ID) {
-            int pivot = low + ((high - low) >> 1);
-            int result = bunkers.get(pivot).toString().compareTo(name);
-            if (result == 0)
-                id = pivot;
-            else if (result < 0)
-                low = pivot + 1;
-            else high = pivot - 1;
+        int i = 0;
+        while (i < bunkers.len() && id == INVALID_ID) {
+            if (bunkers.get(i).toString().equals(name)) {
+                id = i;
+            }
+            i++;
         }
         return id;
     }
@@ -132,20 +173,29 @@ public class GameClass implements Game {
     }
 
     @Override
-    public String getTeamName(int id) {
-        return teams.get(id).toString();
+    public String getTeamName(Team id) {
+        return teams.get(find(id)).toString();
     }
 
     @Override
     public char getTileAt(int x, int y) {
-        Tile tile = map[x][y];
-        if (!(tile instanceof Bunker bunker))
-            if (players.get(tile.getOccupier()).ownerIdIs(currentTeamId)) return 'P';
-            else return '.';
+        Tile tile = map[y][x];
+        if (!(tile instanceof Bunker bunker)) {
+            if (tile.getOccupier() == null)
+                return '.';
+            if (!players.get(players.find(tile.getOccupier())).ownerIdIs(teams.get(currentTeamId)))
+                return '.';
+            else
+                return 'P';
+        }
 
-        if (bunker.getOwnerId() == -1) return '.';
-        if (bunker.getOwnerId() == currentTeamId && bunker.isOccupied()) return 'O';
-        return 'B';
+
+        if (bunker.getOwner() == teams.get(currentTeamId))
+            if (bunker.isOccupied())
+                return 'O';
+            else
+                return 'B';
+        return '.';
     }
 
     @Override
@@ -160,7 +210,6 @@ public class GameClass implements Game {
 
     @Override
     public void createPlayer(String playerType, String bunkerName) {
-        int currentTeamId = getTeamId(getCurrentTeam());
         Team tempTeam = teams.get(currentTeamId);
         int x, y;
         int price = playerPrice(playerType);
@@ -168,44 +217,41 @@ public class GameClass implements Game {
         x = bunker.getX();
         y = bunker.getY();
         bunker.setTreasure(bunker.getTreasure() - price);
-        Player tempPlayer;
-        int currentId = 0;
-        currentId = players.len();
+        Player tempPlayer = null;
         switch (playerType) {
-
             case RED:
-
-                tempPlayer = new RedPlayer(x, y, currentTeamId, currentId);
+                tempPlayer = new RedPlayer(x, y, tempTeam);
                 players.add(tempPlayer);
-
                 bunker.occupy(tempPlayer);
                 break;
             case BLUE:
-                tempPlayer = new BluePlayer(x, y, currentTeamId, currentId);
+                tempPlayer = new BluePlayer(x, y, tempTeam);
                 players.add(tempPlayer);
                 bunker.occupy(tempPlayer);
                 break;
             case GREEN:
-                tempPlayer = new GreenPlayer(x, y, currentTeamId, currentId);
+                tempPlayer = new GreenPlayer(x, y, tempTeam);
                 players.add(tempPlayer);
                 bunker.occupy(tempPlayer);
                 break;
         }
-        tempTeam.addPlayer(playerType, x, y, currentTeamId, currentId);
-
-
+        tempTeam.addPlayer(tempPlayer);
     }
-
 
     @Override
     public int playerPrice(String playerType) {
-        int returnValue = 0;
         switch (playerType) {
-            case RED -> returnValue = REDPRICE;
-            case BLUE -> returnValue = BLUEPRICE;
-            case GREEN -> returnValue = GREENPRICE;
+            case BLUE -> {
+                return BLUEPRICE;
+            }
+            case GREEN -> {
+                return GREENPRICE;
+            }
+            case RED -> {
+                return REDPRICE;
+            }
         }
-        return returnValue;
+        return 0;
     }
 
     @Override
@@ -225,10 +271,6 @@ public class GameClass implements Game {
         return bunker;
     }
 
-    @Override
-    public void movePlayer() {
-
-    }
 
     public boolean checkPlayerType(String playerType) {
         boolean returnValue;
@@ -239,36 +281,18 @@ public class GameClass implements Game {
         return returnValue;
     }
 
-    @Override
-    public int move(int x, int y, String directions, int numberOfMoves) {
-        int output = 0;
-        Player player = findPlayer(x, y);
-        output = BeforeMoveError(x, y, directions, numberOfMoves, player);
-        if (output == 0) {
-            int PlayersX = x;
-            int PlayersY = y;
-            int dir_i = 0;
-            switch (directions) {
-                case NORTH -> {
-                    dir_i = 1;
-                }
-                case WEST -> {
-                    dir_i = 2;
-                }
-                case EAST -> {
-                    dir_i = 3;
-                }
-                case SOUTH -> {
-                    dir_i = 4;
-                }
-            }
-            output = DuringMoveError(PlayersX, PlayersY, dir_i, player);
-            if (output == 0) {
-                player.move(dir_i);
-            }
-        }
-        return output;
 
+    @Override
+    public Player findPlayer(int x, int y) {
+        Iterator<Player> pIt = getCurrentTeamsPlayers();
+        Player thisPlayer = null;
+
+        while (pIt.hasNext() && thisPlayer == null) {
+            Player otherPlayer = pIt.next();
+            if (otherPlayer.getX() == x && otherPlayer.getY() == y)
+                thisPlayer = otherPlayer;
+        }
+        return thisPlayer;
     }
 
     @Override
@@ -279,43 +303,38 @@ public class GameClass implements Game {
     @Override
     public void attack() {
         Player player;
-        for (int i = 0; i < players.len(); i++) {
+        int i = 0;
+        int previousLen;
+        while (i < players.len()) {
+            previousLen = players.len();
             player = players.get(i);
-            if (player.ownerIdIs(currentTeamId)) {
+            if (player.ownerIdIs(teams.get(currentTeamId))) {
                 switch (player.getType()) {
-                    case "blue" -> attackBlue(i, currentTeamId);
-                    case "green" -> attackGreen(i, currentTeamId);
-                    case "red" -> attackRed(i, currentTeamId);
+                    case "blue" -> attackBlue(i);
+                    case "green" -> attackGreen(i);
+                    case "red" -> attackRed(i);
                 }
+            }
+            if (previousLen == players.len()) {
+                i++;
             }
         }
     }
 
-    //TODO types
-    private void attackBlue(int attackerId, int currentTeamId) {
-        int i;
-        int sign;
+    private void attackBlue(int attackerId) {
+        int ux;
         int n = 1;
         int iterationsSkipped = 0;
         Player attacker = players.get(attackerId);
         boolean attackerDied = false;
 
         while (iterationsSkipped < 2 && !attackerDied) {
-            sign = (n % 2 == 0) ? 1 : -1;
-            i = sign * n + attacker.getX();
-            if (isInBounds(i, attacker.getY())) {
+            ux = UBlue(n, attacker) + attacker.getX();
+            if (isInBounds(ux, attacker.getY())) {
                 iterationsSkipped = 0;
-                Tile target = map[i][attacker.getY()];
+                Tile target = map[attacker.getY()][ux + attacker.getX()];
                 Player defender = target.getOccupier();
-                // kill defender or die
-                if (target.isOccupied() && !defender.ownerIdIs(currentTeamId)) {
-                    //kill
-                    target.free();
-                    players.remove(players.find(defender));
-                    //die
-                    players.remove(attackerId);
-                    attackerDied = true;
-                }
+                attackerDied = startDuel(target, defender, attacker);
             } else {
                 iterationsSkipped++;
             }
@@ -323,18 +342,110 @@ public class GameClass implements Game {
         }
     }
 
-
-    private void attackGreen(int playerId, int currentTeamId) {
+    // Un E R^2, Un = (n/4 + 1) * ((-1)^a, (-1)^b)
+    private void attackGreen(int attackerId) {
+        int[] u = new int[2];
+        int n = 1;
+        int iterationsSkipped = 0;
+        Player attacker = players.get(attackerId);
+        boolean attackerDied = false;
+        while (iterationsSkipped < 4 && !attackerDied) {
+            UGreen(n, u);
+            u[X] += attacker.getX();
+            u[Y] += attacker.getY();
+            if (isInBounds(u[X], u[Y])) {
+                iterationsSkipped = 0;
+                Tile target = map[u[Y]][u[X]];
+                Player defender = target.getOccupier();
+                attackerDied = startDuel(target, defender, attacker);
+            } else {
+                iterationsSkipped++;
+            }
+            n++;
+        }
     }
 
-    private void attackRed(int playerId, int currentTeamId) {
+    private void attackRed(int attackerId) {
+        int[] u = new int[2];
+        int n = 1;
+        int iterationsSkipped = 0;
+        Player attacker = players.get(attackerId);
+        u[X] = attacker.getX();
+        u[Y] = attacker.getY();
+        boolean attackerDied = false;
+        while (iterationsSkipped < 2 && !attackerDied) {
+            u[X]++;
+            if (isInBounds(u[X], u[Y])) {
+                iterationsSkipped = 0;
+                Tile target = map[u[Y]][u[X]];
+                Player defender = target.getOccupier();
+                attackerDied = startDuel(target, defender, attacker);
+            } else {
+                iterationsSkipped++;
+                u[X] = attacker.getX();
+                u[Y]++;
+            }
+            n++;
+        }
     }
+
+    /**
+     *
+     * @param target tile do defender
+     * @param defender player que esta a levar
+     * @param attacker player que esta a dar
+     * @return true if attacker lost, false if attacker won
+     */
+    private boolean startDuel(Tile target, Player defender, Player attacker) {
+        if (target.isOccupied() && !defender.ownerIdIs(teams.get(currentTeamId))) {
+            switch (attacker.getType()) {
+                case "blue" -> {
+                    if (defender.getType().equals("red")) {
+                        map[attacker.getY()][attacker.getX()].free();
+                        players.remove(attacker);
+                        teams.get(currentTeamId).removePlayer(attacker);
+                        return true;
+                    } else {
+                        target.free();
+                        players.remove(players.find(defender));
+                        teams.get(find(defender.getOwnerId())).removePlayer(defender);
+                    }
+                }
+                case "green" -> {
+                    if (defender.getType().equals("blue")) {
+                        map[attacker.getY()][attacker.getX()].free();
+                        players.remove(attacker);
+                        teams.get(currentTeamId).removePlayer(attacker);
+                        return true;
+                    } else {
+                        target.free();
+                        players.remove(players.find(defender));
+                        teams.get(find(defender.getOwnerId())).removePlayer(defender);
+                    }
+                }
+                case "red" -> {
+                    if (defender.getType().equals("green")) {
+                        map[attacker.getY()][attacker.getX()].free();
+                        players.remove(attacker);
+                        teams.get(currentTeamId).removePlayer(attacker);
+                        return true;
+                    } else {
+                        target.free();
+                        players.remove(players.find(defender));
+                        teams.get(find(defender.getOwnerId())).removePlayer(defender);
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
 
     //TODO types
     private boolean attackInMap(int x, int y, String type, Player defender) {
-        Tile target = map[x][y];
+        Tile target = map[y][x];
         defender = target.getOccupier();
-        if (target.isOccupied() && !defender.ownerIdIs(currentTeamId)) {
+        if (target.isOccupied() && !defender.ownerIdIs(teams.get(currentTeamId))) {
             target.free();
             return true;
         }
@@ -342,69 +453,149 @@ public class GameClass implements Game {
     }
 
     private boolean isInBounds(int x, int y) {
-        return (x < 0 || x > wd) && (y < 0 || y > ht);
+        return (x >= 0 && x < wd) && (y >= 0 && y < ht);
     }
 
     @Override
-    public int BeforeMoveError(int x, int y, String directions, int numberOfMoves, Player player) {
-        int output = 0;
-        if (isInBounds(x, y)) {
-            output = 1;
-        } else if (!directions.equals(NORTH) && !directions.equals(WEST) && !directions.equals(EAST) && !directions.equals(SOUTH)) {
-            output = 2;
-        } else if (player == null) {
-            output = 3;
-        } else if (!player.getType().equals(RED) && numberOfMoves >= 1) {
-            output = 4;
+    public int move(int x, int y, String directionName, int numberOfMoves) {
+        Player player = findPlayer(x, y);
+        int direction = 0;
+        switch (directionName) {
+            case NORTH -> {
+                direction = N_DIRECTION;
+            }
+            case WEST -> {
+                direction = W_DIRECTION;
+            }
+            case EAST -> {
+                direction = E_DIRECTION;
+            }
+            case SOUTH -> {
+                direction = S_DIRECTION;
+            }
+        }
+        int output = BeforeMoveError(x, y, direction, numberOfMoves, player);
+        if (output != 0) {
+            return output;
+        }
+
+
+        output = DuringMoveError(x, y, direction, player);
+        if (output != 5 && output != 6 && output != 10) {
+            map[y][x].free();
+            switch (direction) {
+                case 1 -> y--;
+                case 2 -> x--;
+                case 3 -> x++;
+                case 4 -> y++;
+            }
+            map[y][x].occupy(player);
+            player.move(x, y);
+
         }
         return output;
     }
 
     @Override
-    public int DuringMoveError(int x, int y, int dir_i, Player player) {
-        //* Todo ver se a equipa ganho depois de um ataque
-        //  Todo ataque com move
-        //  Todo erro depois
-        int PX = x;
-        int PY = y;
-        int output = 0;
-        switch (dir_i) {
-            case 1 -> PX--;
-            case 2 -> PY--;
-            case 3 -> PY++;
-            case 4 -> PX++;
+    public int BeforeMoveError(int x, int y, int direction, int numberOfMoves, Player player) {
+        if (!isInBounds(x, y))
+            return 1;
+        if (direction == 0)
+            return 2;
+        if (player == null)
+            return 3;
+        if (!player.getType().equals(RED) && numberOfMoves > 1)
+            return 4;
+        switch (direction) {
+            case N_DIRECTION -> y--;
+            case W_DIRECTION -> x--;
+            case E_DIRECTION -> x++;
+            case S_DIRECTION -> y++;
         }
-        Player Ranplayer = null;
-        Ranplayer = map[PX][PY].getOccupier();
-        if (!map[PX][PY].isOccupied() && Ranplayer != null && Ranplayer.ownerIdIs(getTeamId(getCurrentTeam())))
+        if (!isInBounds(x, y))
             return 6;
-
-        if (!map[PX][PY].isOccupied() && map[PX][PY] instanceof Bunker)
-            return 9;
-
-        if (!map[PX][PY].isOccupied()) {
-            switch (player.getType()) {
-                case RED ->
-                case BLUE ->
-                case GREEN ->
-            }
-            return 8;
-        }
-
-        if (map[PX][PY] instanceof Bunker) {
-            map[x][y].free();
-            map[PX][PY].occupy(player);
-            Bunker bunker = (Bunker) map[PX][PY];
-            if (bunker.isOccupied() && !player.ownerIdIs(bunker.getOwnerId())) {
-                Team tempTeam = teams.get(bunker.getOwnerId());
-                tempTeam.loseBunker(bunker);
-            }
-            Team atkTeam = teams.get(getTeamId(getCurrentTeam()));
-            atkTeam.addBunker(bunker);
-            bunker.occupy(player);
-            return 7;
-        }
         return 0;
+    }
 
+    @Override
+    public int DuringMoveError(int x, int y, int direction, Player player) {
+        switch (direction) {
+            case N_DIRECTION -> y--;
+            case W_DIRECTION -> x--;
+            case E_DIRECTION -> x++;
+            case S_DIRECTION -> y++;
+        }
+        Player Ranplayer = map[y][x].getOccupier();
+        if (Ranplayer == null && !(map[y][x] instanceof Bunker))
+            return 0;
+        int playerId = players.find(player);
+        if (map[y][x] instanceof Bunker) {
+            Bunker bunker = (Bunker) map[y][x];
+            Team atkTeam = teams.get(currentTeamId);
+            if (bunker.isOccupied()) {
+                if (!player.ownerIdIs(bunker.getOwner())) {
+                    if (Ranplayer == null)
+                        return 0;
+                    if (!startDuel(map[y][x], Ranplayer, player)) {
+                        Team denfTeam = bunker.getOwner();
+                        denfTeam.loseBunker(bunker);
+                        atkTeam.addBunker(bunker);
+                        bunker.setOwner(player.getOwnerId());
+                        bunker.occupy(player);
+                        return 9;
+                    } else return 10;
+                } else return 5;
+            } else if (!player.ownerIdIs(bunker.getOwner())) {
+                if (bunker.getOwner() != null) {
+                    bunker.getOwner().loseBunker(bunker);
+                }
+                atkTeam.addBunker(bunker);
+                bunker.setOwner(player.getOwnerId());
+                return 7;
+            }
+        }
+
+
+        if (map[y][x].isOccupied() && !Ranplayer.ownerIdIs(teams.get(currentTeamId)))
+            if (startDuel(map[y][x], Ranplayer, player)) {
+                return 10;
+            } else return 8;
+
+        if (map[y][x].isOccupied() && Ranplayer.ownerIdIs(teams.get(currentTeamId)))
+            return 5;
+
+
+        return 0;
+    }
+
+    @Override
+    public boolean update() {
+        for (int i = 0; i < bunkers.len(); i++) {
+            bunkers.get(i).increaseTreasure();
+        }
+        Team previousTeam = teams.get(currentTeamId);
+        if (isThereOneTeamLeft())
+            return true;
+        if (previousTeam == teams.get(currentTeamId))
+            currentTeamId++;
+        if (currentTeamId >= teams.len()) {
+            currentTeamId = 0;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean isThereOneTeamLeft() {
+        int i = 0;
+        Team team;
+        while (i < teams.len()) {
+            team = teams.get(i);
+            if (team.getBunkersLen() == 0 && team.getPlayersLen() == 0) {
+                teams.remove(i);
+            } else {
+                i++;
+            }
+        }
+        return teams.len() == 1;
     }
 }

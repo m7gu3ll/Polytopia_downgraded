@@ -5,14 +5,14 @@ public interface Player {
 
     String getType();
 
-    boolean ownerIdIs(int currentTeamId);
+    boolean ownerIdIs(Team currentTeamId);
 
-    boolean checkIsPlayer(int x, int y);
-
-    void move(int i);
+    void move(int x, int y);
 
     int getX();
 
     int getY();
-    int getPlayerId();
+
+    Team getOwnerId();
+
 }

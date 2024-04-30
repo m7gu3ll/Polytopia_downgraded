@@ -1,13 +1,13 @@
 package PaintBall;
 
 public interface Team {
-    public boolean exists();
+     boolean exists();
 
-    public Iterator<Tile> getBunkerIterator();
+     Iterator<Tile> getBunkerIterator();
 
-    public int getBunkerLen();
+    int getBunkersLen();
 
-    public void addPlayer(String type, int x, int y, int ownerId,int pId);
+   void addPlayer(Player e);
 
 
     PlayerIterator getPlayerIterator();
@@ -15,4 +15,6 @@ public interface Team {
     void removePlayer(Player playerAttacking);
     void loseBunker(Bunker bunker);
     void addBunker(Bunker bunker);
+
+    int getPlayersLen();
 }

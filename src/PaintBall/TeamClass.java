@@ -21,7 +21,7 @@ public class TeamClass implements Team {
 
     @Override
     public boolean exists() {
-        return name == null;
+        return name != null;
     }
 
     @Override
@@ -35,25 +35,18 @@ public class TeamClass implements Team {
     }
 
     @Override
-    public int getBunkerLen() {
+    public int getPlayersLen() {
+        return players.len();
+    }
+
+    @Override
+    public int getBunkersLen() {
         return bunkers.len();
     }
 
     @Override
-    public void addPlayer(String playerType, int x, int y, int ownerId,int pId) {
-
-        switch (playerType) {
-            case RED:
-                players.add(new RedPlayer(x, y, ownerId,pId));
-                break;
-            case BLUE:
-                players.add(new BluePlayer(x, y, ownerId,pId));
-                break;
-            case GREEN:
-                players.add(new GreenPlayer(x, y, ownerId,pId));
-                break;
-        }
-
+    public void addPlayer(Player e) {
+        players.add(e);
     }
 
     @Override
@@ -63,24 +56,11 @@ public class TeamClass implements Team {
 
     @Override
     public void removePlayer(Player playerAttacking) {
-
+        players.remove(playerAttacking);
     }
 
     @Override
     public void loseBunker(Bunker bunker) {
-        Iterator<Tile> BunkerAR =getBunkerIterator();
-        Bunker tempbunker;
-        int id=0;
-        while (BunkerAR.hasNext()){
-            tempbunker= (Bunker) BunkerAR.next();
-            int x=tempbunker.getX();
-            int y=tempbunker.getY();
-            int atkx=bunker.getX();
-            int atky=bunker.getY();
-            if (x==atkx&&y==atky){
-                bunkers.remove(id);
-            }
-            id++;
-        }
+        bunkers.remove(bunker);
     }
 }

@@ -7,7 +7,7 @@ public class TeamArrayList implements ArrayList<Team>{
 
     public TeamArrayList() {
         array = new Team[DEFAULT_SIZE];
-        len = DEFAULT_SIZE;
+        len = 0;
     }
 
     @Override
@@ -25,13 +25,18 @@ public class TeamArrayList implements ArrayList<Team>{
     }
 
     @Override
+    public void remove(Team e) {
+        remove(find(e));
+    }
+
+    @Override
     public Team get(int i) {
         return array[i];
     }
 
     @Override
     public void resize() {
-        Team[] newArray = new Team[array.length >> 1 + array.length];
+        Team[] newArray = new Team[(array.length >> 1)+ array.length];
         System.arraycopy(array, 0, newArray, 0, array.length);
         array = newArray;
     }
@@ -39,5 +44,18 @@ public class TeamArrayList implements ArrayList<Team>{
     @Override
     public int len() {
         return len;
+    }
+
+    @Override
+    public int find(Team e) {
+        int id = -1;
+        int i = 0;
+        while (i < len && id == -1) {
+            if (e == array[i]) {
+                id = i;
+            }
+            i++;
+        }
+        return id;
     }
 }

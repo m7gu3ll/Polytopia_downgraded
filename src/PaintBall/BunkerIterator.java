@@ -11,7 +11,7 @@ public class BunkerIterator implements Iterator<Tile> {
 
     @Override
     public boolean hasNext() {
-        return index >= array.len();
+        return index < array.len();
     }
 
     @Override

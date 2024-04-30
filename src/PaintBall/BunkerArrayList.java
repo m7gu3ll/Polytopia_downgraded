@@ -13,22 +13,7 @@ public class BunkerArrayList implements ArrayList<Bunker> {
     @Override
     public void add(Bunker e) {
         if (len + 1 >= array.length) resize();
-        int low = 0;
-        int high = len - 1;
-        while (low < high) {
-            int pivot = low + ((high - low) >> 1);
-            int result = array[pivot].toString().compareTo(e.toString());
-            if (result < 0) {
-                low = pivot + 1;
-            } else {
-                high = pivot - 1;
-            }
-        }
-        for (int j = len; j > low; j--) {
-            array[j] = array[j - 1];
-        }
-        array[low] = e;
-        len++;
+        array[len++] = e;
     }
 
     @Override
@@ -40,19 +25,38 @@ public class BunkerArrayList implements ArrayList<Bunker> {
     }
 
     @Override
+    public void remove(Bunker e) {
+        remove(find(e));
+    }
+
+    @Override
     public Bunker get(int i) {
         return array[i];
     }
 
     @Override
     public void resize() {
-        Bunker[] newArray = new Bunker[array.length >> 1 + array.length];
-        System.arraycopy(array, 0, newArray, 0, array.length);
+        Bunker[] newArray = new Bunker[(array.length >> 1) + array.length];
+        for (int i = 0; i < array.length; i++)
+            newArray[i]=array[i];
         array = newArray;
     }
 
     @Override
     public int len() {
         return len;
+    }
+
+    @Override
+    public int find(Bunker e) {
+        int id = -1;
+        int i = 0;
+        while (i < len && id == -1) {
+            if (e == array[i]) {
+                id = i;
+            }
+            i++;
+        }
+        return id;
     }
 }

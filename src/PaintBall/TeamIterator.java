@@ -12,7 +12,7 @@ public class TeamIterator implements Iterator<Team> {
 
     @Override
     public boolean hasNext() {
-        return index >= array.len();
+        return index < array.len();
     }
 
     @Override

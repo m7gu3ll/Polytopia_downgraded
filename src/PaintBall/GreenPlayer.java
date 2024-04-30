@@ -3,15 +3,15 @@ package PaintBall;
 public class GreenPlayer implements Player {
     int x;
     int y;
-    int OwnerId;
+    Team id;
     String type = "green";
-    int id;
 
-    public GreenPlayer(int x, int y, int OwnerID, int id) {
+    String potato;
+
+    public GreenPlayer(int x, int y, Team ownerID) {
         this.x = x;
         this.y = y;
-        this.OwnerId = OwnerID;
-        this.id =id;
+        this.id = ownerID;
     }
 
     @Override
@@ -19,24 +19,15 @@ public class GreenPlayer implements Player {
         return type;
     }
 
-    @Override
-    public boolean ownerIdIs(int currentTeamId) {
-        return OwnerId == currentTeamId;
+    public boolean ownerIdIs(Team currentTeamId) {
+        return id == currentTeamId;
     }
 
-    @Override
-    public boolean checkIsPlayer(int x, int y) {
-        return this.x == x && this.y == y;
-    }
 
     @Override
-    public void moveX(int i) {
-        x += i;
-    }
-
-    @Override
-    public void moveY(int i) {
-        y += i;
+    public void move(int x, int y) {
+        this.x = x;
+        this.y = y;
     }
 
     @Override
@@ -48,8 +39,10 @@ public class GreenPlayer implements Player {
     public int getY() {
         return y;
     }
+
     @Override
-    public int getPlayerId() {
+    public Team getOwnerId() {
         return id;
     }
+
 }

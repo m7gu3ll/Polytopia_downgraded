@@ -1,29 +1,27 @@
 package PaintBall;
 
 public class Bunker implements Tile {
-
-
-    public static final char BUNKER = 'B';
-    public static final char BUNKER_OCCUPIED = 'O';
-    public static final char EMPTY_TILE = '.';
     private Player occupier;
     private int x;
     private int y;
     private int treasure;
     private String name;
-    private int owner;
+    private Team owner;
 
     public Bunker(int x, int y, int treasure, String name) {
         this.x = x;
         this.y = y;
         this.treasure = treasure;
         this.name = name;
+        owner = null;
+        occupier = null;
     }
 
     @Override
     public boolean isOccupied() {
         return occupier != null;
     }
+
     @Override
     public void occupy(Player player) {
         occupier = player;
@@ -51,12 +49,12 @@ public class Bunker implements Tile {
         return name;
     }
 
-    public int getOwnerId() {
+    public Team getOwner() {
         return owner;
     }
 
-    public void setOwnerId(int teamId) {
-        owner = teamId;
+    public void setOwner(Team team) {
+        owner = team;
     }
 
     public int getX() {
@@ -67,4 +65,7 @@ public class Bunker implements Tile {
         return y;
     }
 
+    public void increaseTreasure() {
+        treasure++;
+    }
 }

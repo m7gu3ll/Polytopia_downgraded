@@ -25,14 +25,20 @@ public class PlayerArrayList implements ArrayList<Player> {
     }
 
     @Override
+    public void remove(Player e) {
+        remove(find(e));
+    }
+
+    @Override
     public Player get(int i) {
         return array[i];
     }
 
     @Override
     public void resize() {
-        Player[] newArray = new Player[array.length >> 1 + array.length];
-        System.arraycopy(array, 0, newArray, 0, array.length);
+        Player[] newArray = new Player[(array.length >> 1) + array.length];
+        for (int i = 0; i < array.length; i++)
+            newArray[i] = array[i];
         array = newArray;
     }
 
@@ -41,15 +47,16 @@ public class PlayerArrayList implements ArrayList<Player> {
         return len;
     }
 
-
-    public int find(Player defender) {
-        boolean found = false;
+    @Override
+    public int find(Player e) {
+        int id = -1;
         int i = 0;
-        while (i < len && !found) {
-            if (defender == array[i]) {
-                found = true;
+        while (i < len && id == -1) {
+            if (e == array[i]) {
+                id = i;
             }
+            i++;
         }
-        return i;
+        return id;
     }
 }

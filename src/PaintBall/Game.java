@@ -6,6 +6,7 @@ public interface Game {
     int getNumberOfTeams();
 
     String getCurrentTeam();
+
     boolean verifyBunkerParameters(int x, int y, int treasure, String name);
 
     boolean verifyTeamParameters(int bunkerId, String name);
@@ -17,29 +18,44 @@ public interface Game {
     int getY();
 
     int getBunkerId(String name);
+
     int getTeamId(String name);
+
     Iterator<Tile> getBunkerIterator();
+
     Iterator<Team> getTeamIterator();
-    public String getTeamName(int id);
+
+    String getTeamName(Team id);
 
     char getTileAt(int i, int j);
 
-    void createPlayer(String playerType,String bunkerName);
+    void createPlayer(String playerType, String bunkerName);
 
     void addBunker(int x, int y, int treasure, String name);
+
     int playerPrice(String playerType);
+
     Bunker findCurrentTeamBunker(String bunkerName);
-    void movePlayer();
+
+
     boolean checkPlayerType(String playerType);
-    int move(int x,int y,String directions,int numberOfMoves);
-    Player findPlayer(int x, int y );
+
+    int move(int x, int y, String directions, int numberOfMoves);
+
+    Player findPlayer(int x, int y);
 
     PlayerIterator getCurrentTeamsPlayers();
 
     void attack();
-    int BeforeMoveError(int x,int y,String directions,int numberOfMoves,Player player);
-    int DuringMoveError(int x,int y,int dir_i,Player player);
 
+    int BeforeMoveError(int x, int y, int direction, int numberOfMoves, Player player);
+
+    int DuringMoveError(int x, int y, int dir_i, Player player);
+
+
+    boolean update();
+
+    boolean isThereOneTeamLeft();
 }
 
 

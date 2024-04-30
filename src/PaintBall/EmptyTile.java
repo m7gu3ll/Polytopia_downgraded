@@ -1,9 +1,6 @@
 package PaintBall;
 
 public class EmptyTile implements Tile {
-
-    public static final char EMPTY_TILE = '.';
-    public static final char PLAYER = 'P';
     Player occupier;
 
     public EmptyTile() {
